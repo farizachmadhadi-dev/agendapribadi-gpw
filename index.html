@@ -3,176 +3,433 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda Pribadi - Multi PIN</title>
+    <title>Agenda & Rekap Pribadi</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- FontAwesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col items-center justify-start p-4">
+<body class="bg-slate-50 text-slate-800 font-sans pb-20">
 
-    <!-- Modal / Screen Masukkan PIN -->
-    <div id="lockScreen" class="fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center">
-            <h2 class="text-xl font-bold mb-2">Masukan PIN Agenda</h2>
-            <p class="text-sm text-slate-500 mb-4">Masukkan PIN Anda untuk membuka agenda pribadi.</p>
-            <input type="password" id="pinInput" maxlength="6" class="w-full text-center tracking-widest text-2xl py-2 border border-slate-300 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••">
-            <button onclick="loginUser()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition">Buka Agenda</button>
-            <p id="pinError" class="text-red-500 text-xs mt-2 hidden">PIN tidak terdaftar!</p>
+    <!-- MODAL / HALAMAN LOGIN PIN -->
+    <div id="login-modal" class="fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl space-y-4 text-center">
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 id="login-title" class="text-lg font-bold text-slate-800">Keamanan Perangkat</h2>
+            <p id="login-subtitle" class="text-xs text-slate-500">Masukkan PIN perangkat ini untuk melanjutkan.</p>
+            
+            <form id="form-login" class="space-y-3">
+                <input type="password" id="pin-input" maxlength="10" required class="w-full text-center tracking-widest text-lg px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="••••">
+                <button type="submit" id="btn-login-submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition">Buka Aplikasi</button>
+            </form>
+            <button onclick="resetDevicePin()" id="btn-reset-pin" class="text-xs text-red-500 hover:underline hidden mt-2">Lupa PIN / Ganti PIN</button>
         </div>
     </div>
 
-    <!-- Konten Utama Aplikasi -->
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <header class="flex justify-between items-center mb-6 border-b pb-4">
-            <div>
-                <h1 class="text-lg font-bold">📅 Agenda Pribadi</h1>
-                <span id="userSessionLabel" class="text-xs text-slate-500 font-medium"></span>
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <h1 class="text-lg font-bold"><i class="fa-solid fa-calendar-days mr-2"></i>Agenda & Rekap</h1>
+                <button onclick="lockApp()" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-2 py-1 rounded text-indigo-200 transition" title="Kunci Aplikasi"><i class="fa-solid fa-lock"></i> Kunci</button>
             </div>
-            <button onclick="logout()" class="text-xs bg-red-100 text-red-600 font-medium px-3 py-1.5 rounded-lg hover:bg-red-200 transition">Keluar</button>
-        </header>
+            <span id="current-date" class="text-xs bg-indigo-700 px-2 py-1 rounded"></span>
+        </div>
+    </header>
 
-        <!-- Form Tambah Agenda -->
-        <div class="space-y-4 mb-6">
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal & Waktu</label>
-                <input type="datetime-local" id="agendaDate" class="w-full text-sm p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan Agenda</label>
-                <textarea id="agendaText" rows="2" class="w-full text-sm p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tulis rencana kegiatan..."></textarea>
-            </div>
-            <button onclick="addAgenda()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl text-sm transition">Simpan Agenda</button>
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto p-4 space-y-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex rounded-lg bg-slate-200 p-1">
+            <button onclick="switchTab('agenda')" id="tab-agenda" class="flex-1 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 shadow-sm transition">Agenda & Rencana</button>
+            <button onclick="switchTab('rekap')" id="tab-rekap" class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition">Rekap Selesai</button>
         </div>
 
-        <!-- Daftar Agenda -->
-        <div>
-            <h2 class="text-sm font-bold text-slate-700 mb-3">Daftar Agenda</h2>
-            <div id="agendaList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                <p class="text-xs text-slate-400 text-center py-4">Memuat data...</p>
+        <!-- SECTION: AGENDA -->
+        <section id="section-agenda" class="space-y-4">
+            <!-- Form Input Agenda -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-plus-circle text-indigo-600 mr-1"></i> Tambah Agenda Baru</h2>
+                <form id="form-agenda" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Judul Kegiatan</label>
+                        <input type="text" id="ag-title" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Editing Video / Meeting">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal</label>
+                            <input type="date" id="ag-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Jam</label>
+                            <input type="time" id="ag-time" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Simpan Agenda</button>
+                </form>
             </div>
-        </div>
-    </div>
 
+            <!-- Panel Kirim Agenda ke WA -->
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Rekap Jadwal ke WA</h3>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="sendBatchWA('agenda', 'today')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">Hari Ini</button>
+                    <button onclick="sendBatchWA('agenda', 'week')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Pekan</button>
+                    <button onclick="sendBatchWA('agenda', 'twoweeks')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">2 Pekan</button>
+                    <button onclick="sendBatchWA('agenda', 'month')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Bulan</button>
+                </div>
+            </div>
+
+            <!-- List Agenda -->
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Agenda Tersimpan</h3>
+                <div id="list-agenda" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- SECTION: REKAP AKTIVITAS -->
+        <section id="section-rekap" class="space-y-4 hidden">
+            <!-- Form Input Catatan/Rekap -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                <h2 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-clipboard-check text-emerald-600 mr-1"></i> Catat Hasil Kerja (Log)</h2>
+                <form id="form-rekap" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Aktivitas yang Dilakukan</label>
+                        <input type="text" id="rk-desc" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Selesai editing video durasi 5 menit">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Selesai</label>
+                            <input type="date" id="rk-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Jam Selesai</label>
+                            <input type="time" id="rk-time" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">Catat ke Rekap Harian</button>
+                </form>
+            </div>
+
+            <!-- Panel Kirim Rekap Selesai ke WA -->
+            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm space-y-3">
+                <h3 class="text-xs font-bold text-indigo-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Laporan Hasil Kerja ke WA</h3>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button onclick="sendBatchWA('rekap', 'today')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">Hari Ini</button>
+                    <button onclick="sendBatchWA('rekap', 'week')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Pekan</button>
+                    <button onclick="sendBatchWA('rekap', 'twoweeks')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">2 Pekan</button>
+                    <button onclick="sendBatchWA('rekap', 'month')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Bulan</button>
+                </div>
+            </div>
+
+            <!-- List Rekap -->
+            <div class="space-y-2">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Riwayat Aktivitas</h3>
+                <div id="list-rekap" class="space-y-2"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript Logic -->
     <script>
-        // Konfigurasi Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDQAhMUUqVzAOUAdhHksZ6PgOPaXiJuC7o",
-            authDomain: "agendapribadi.firebaseapp.com",
-            databaseURL: "https://agendapribadi-default-rtdb.firebaseio.com",
-            projectId: "agendapribadi",
-            storageBucket: "agendapribadi.firebasestorage.app",
-            messagingSenderId: "62329882460",
-            appId: "1:62329882460:web:34652e2be70e971710a399"
-        };
+        // --- SISTEM PIN PER-DEVICE ---
+        function checkDeviceAuth() {
+            const modal = document.getElementById('login-modal');
+            const resetBtn = document.getElementById('btn-reset-pin');
+            const title = document.getElementById('login-title');
+            const subtitle = document.getElementById('login-subtitle');
+            const submitBtn = document.getElementById('btn-login-submit');
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+            let devicePin = localStorage.getItem('device_unique_pin');
+            let isSessActive = sessionStorage.getItem('device_session_active');
 
-        // Daftar PIN dan Nama Pengguna
-        const users = {
-            "1111": { name: "Agenda Si A", path: "user_a" },
-            "2222": { name: "Agenda Si B", path: "user_b" }
-        };
-
-        let currentUserPath = null;
-
-        // Cek apakah sebelumnya sudah login di browser ini
-        window.onload = function() {
-            const savedPath = localStorage.getItem('active_user_path');
-            const savedName = localStorage.getItem('active_user_name');
-            if (savedPath && savedName) {
-                currentUserPath = savedPath;
-                document.getElementById('userSessionLabel').innerText = savedName;
-                document.getElementById('lockScreen').classList.add('hidden');
-                loadAgendas();
-            }
-        };
-
-        function loginUser() {
-            const enteredPin = document.getElementById('pinInput').value;
-            if (users[enteredPin]) {
-                const user = users[enteredPin];
-                currentUserPath = user.path;
-                
-                // Simpan sesi di browser perangkat ini
-                localStorage.setItem('active_user_path', user.path);
-                localStorage.setItem('active_user_name', user.name);
-
-                document.getElementById('userSessionLabel').innerText = user.name;
-                document.getElementById('lockScreen').classList.add('hidden');
-                document.getElementById('pinError').classList.add('hidden');
-                document.getElementById('pinInput').value = '';
-                loadAgendas();
+            if (!devicePin) {
+                title.innerText = "Buat PIN Perangkat Ini";
+                subtitle.innerText = "Atur PIN khusus untuk mengamankan aplikasi di HP ini.";
+                submitBtn.innerText = "Simpan & Masuk";
+                resetBtn.classList.add('hidden');
+                modal.classList.remove('hidden');
+            } else if (!isSessActive) {
+                title.innerText = "Masukkan PIN Perangkat";
+                subtitle.innerText = "Aplikasi terkunci. Masukkan PIN perangkat ini.";
+                submitBtn.innerText = "Buka Aplikasi";
+                resetBtn.classList.remove('hidden');
+                modal.classList.remove('hidden');
             } else {
-                document.getElementById('pinError').classList.remove('hidden');
+                modal.classList.add('hidden');
             }
         }
 
-        function logout() {
-            localStorage.removeItem('active_user_path');
-            localStorage.removeItem('active_user_name');
-            location.reload();
-        }
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputVal = document.getElementById('pin-input').value;
+            let devicePin = localStorage.getItem('device_unique_pin');
 
-        function addAgenda() {
-            const date = document.getElementById('agendaDate').value;
-            const text = document.getElementById('agendaText').value;
-
-            if (!date || !text) {
-                alert('Mohon isi tanggal dan keterangan agenda!');
-                return;
-            }
-
-            const newAgendaRef = db.ref('agendapribadi/' + currentUserPath + '/items').push();
-            newAgendaRef.set({
-                date: date,
-                text: text,
-                createdAt: Date.now()
-            }, (error) => {
-                if (!error) {
-                    document.getElementById('agendaDate').value = '';
-                    document.getElementById('agendaText').value = '';
-                } else {
-                    alert('Gagal menyimpan: ' + error.message);
-                }
-            });
-        }
-
-        function loadAgendas() {
-            const agendaListRef = db.ref('agendapribadi/' + currentUserPath + '/items');
-            agendaListRef.on('value', (snapshot) => {
-                const container = document.getElementById('agendaList');
-                container.innerHTML = '';
-                
-                const data = snapshot.val();
-                if (!data) {
-                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Belum ada agenda.</p>';
+            if (!devicePin) {
+                if (inputVal.length < 3) {
+                    alert('PIN terlalu pendek! Minimal 3 karakter.');
                     return;
                 }
+                localStorage.setItem('device_unique_pin', inputVal);
+                sessionStorage.setItem('device_session_active', 'true');
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('pin-input').value = '';
+                alert('PIN berhasil diset untuk perangkat ini!');
+            } else {
+                if (inputVal === devicePin) {
+                    sessionStorage.setItem('device_session_active', 'true');
+                    document.getElementById('login-modal').classList.add('hidden');
+                    document.getElementById('pin-input').value = '';
+                } else {
+                    alert('PIN salah!');
+                    document.getElementById('pin-input').value = '';
+                }
+            }
+        });
 
-                Object.keys(data).forEach((key) => {
-                    const item = data[key];
-                    const card = document.createElement('div');
-                    card.className = 'p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-start';
-                    card.innerHTML = `
-                        <div>
-                            <span class="font-semibold text-blue-600 block mb-1">${item.date.replace('T', ' ')}</span>
-                            <p class="text-slate-700 whitespace-pre-wrap">${item.text}</p>
-                        </div>
-                        <button onclick="deleteAgenda('${key}')" class="text-red-400 hover:text-red-600 font-bold ml-2">✕</button>
-                    `;
-                    container.appendChild(card);
+        function lockApp() {
+            sessionStorage.removeItem('device_session_active');
+            document.getElementById('pin-input').value = '';
+            checkDeviceAuth();
+        }
+
+        function resetDevicePin() {
+            const oldPin = prompt("Masukkan PIN lama untuk mengganti PIN baru:");
+            let devicePin = localStorage.getItem('device_unique_pin');
+            if (oldPin === devicePin) {
+                localStorage.removeItem('device_unique_pin');
+                sessionStorage.removeItem('device_session_active');
+                document.getElementById('pin-input').value = '';
+                checkDeviceAuth();
+            } else if (oldPin !== null) {
+                alert('PIN lama salah!');
+            }
+        }
+
+        // Jalankan pengecekan auth saat halaman dibuka
+        checkDeviceAuth();
+
+        // --- APLIKASI UTAMA ---
+        const headerOptions = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', headerOptions);
+
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().slice(0,5);
+
+        document.getElementById('ag-date').value = todayStr;
+        document.getElementById('ag-time').value = timeStr;
+        document.getElementById('rk-date').value = todayStr;
+        document.getElementById('rk-time').value = timeStr;
+
+        function switchTab(tab) {
+            const secAgenda = document.getElementById('section-agenda');
+            const secRekap = document.getElementById('section-rekap');
+            const tabAgenda = document.getElementById('tab-agenda');
+            const tabRekap = document.getElementById('tab-rekap');
+
+            if(tab === 'agenda') {
+                secAgenda.classList.remove('hidden');
+                secRekap.classList.add('hidden');
+                tabAgenda.className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 shadow-sm transition";
+                tabRekap.className = "flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition";
+            } else {
+                secAgenda.classList.add('hidden');
+                secRekap.classList.remove('hidden');
+                tabRekap.className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white text-emerald-600 shadow-sm transition";
+                tabAgenda.className = "flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition";
+            }
+        }
+
+        let agendas = JSON.parse(localStorage.getItem('my_agendas')) || [];
+        let rekaps = JSON.parse(localStorage.getItem('my_rekaps')) || [];
+
+        function formatDateWithDay(dateString) {
+            const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+            const dateObj = new Date(dateString + 'T00:00:00');
+            return dateObj.toLocaleDateString('id-ID', options);
+        }
+
+        function getGoogleCalendarUrl(item) {
+            const cleanDate = item.date.replace(/-/g, '');
+            const cleanTime = item.time.replace(':', '') + '00';
+            const startDateTime = `${cleanDate}T${cleanTime}`;
+            const startDateObj = new Date(`${item.date}T${item.time}:00`);
+            startDateObj.setHours(startDateObj.getHours() + 1);
+            const endDateStr = startDateObj.toISOString().replace(/-|:|\.\d+/g, '');
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(item.title)}&dates=${startDateTime}/${endDateStr}&details=${encodeURIComponent("Agenda dari Aplikasi Pribadi")}`;
+        }
+
+        function getWhatsAppUrl(item) {
+            const hariTanggal = formatDateWithDay(item.date);
+            const text = encodeURIComponent(`*PENGINGAT AGENDA* 📌\n\nKegiatan: ${item.title}\nHari/Tanggal: ${hariTanggal}\nJam: ${item.time}\n\n_Ayo bersiap untuk melaksanakan kegiatan ini!_`);
+            return `https://api.whatsapp.com/send?text=${text}`;
+        }
+
+        function sendBatchWA(type, range) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            let startDate = new Date(today);
+            let endDate = new Date(today);
+            let titleRange = "";
+
+            if(range === 'today') {
+                titleRange = "HARI INI";
+            } else if(range === 'week') {
+                endDate.setDate(today.getDate() + 7);
+                titleRange = "1 PEKAN";
+            } else if(range === 'twoweeks') {
+                endDate.setDate(today.getDate() + 14);
+                titleRange = "2 PEKAN";
+            } else if(range === 'month') {
+                endDate.setMonth(today.getMonth() + 1);
+                titleRange = "1 BULAN";
+            }
+
+            if(type === 'agenda') {
+                const filtered = agendas.filter(item => {
+                    const itemDate = new Date(item.date);
+                    itemDate.setHours(0,0,0,0);
+                    return range === 'today' ? itemDate.getTime() === startDate.getTime() : (itemDate >= startDate && itemDate <= endDate);
                 });
+
+                if(filtered.length === 0) { alert(`Tidak ada agenda untuk kategori ${titleRange}!`); return; }
+                filtered.sort((a,b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+
+                let message = `📋 *REKAP JADWAL AGENDA (${titleRange})* 📋\n\n`;
+                filtered.forEach((item, index) => {
+                    message += `${index + 1}. *${item.title}*\n   📅 ${formatDateWithDay(item.date)} | ⏰ ${item.time}\n\n`;
+                });
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+
+            } else {
+                const filtered = rekaps.filter(item => {
+                    const itemDate = new Date(item.rawDate);
+                    itemDate.setHours(0,0,0,0);
+                    return range === 'today' ? itemDate.getTime() === startDate.getTime() : (itemDate >= startDate && itemDate <= endDate);
+                });
+
+                if(filtered.length === 0) { alert(`Tidak ada rekap selesai untuk kategori ${titleRange}!`); return; }
+                filtered.sort((a,b) => new Date(b.rawDate + ' ' + b.time) - new Date(a.rawDate + ' ' + a.time));
+
+                let message = `✅ *LAPORAN HASIL KERJA / REKAP (${titleRange})* ✅\n\n`;
+                filtered.forEach((item, index) => {
+                    message += `${index + 1}. ${item.desc}\n   📅 ${item.dateText}\n\n`;
+                });
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
+            }
+        }
+
+        function completeAgenda(index) {
+            const item = agendas[index];
+            const hariTanggal = formatDateWithDay(item.date);
+            
+            const newRk = {
+                desc: `[Selesai] ${item.title}`,
+                dateText: `${hariTanggal} (${item.time})`,
+                rawDate: item.date,
+                time: item.time
+            };
+            rekaps.push(newRk);
+            localStorage.setItem('my_rekaps', JSON.stringify(rekaps));
+
+            agendas.splice(index, 1);
+            localStorage.setItem('my_agendas', JSON.stringify(agendas));
+
+            renderAll();
+            alert('Agenda berhasil diselesaikan dan dicatat ke riwayat rekap!');
+        }
+
+        function renderAll() {
+            const listAg = document.getElementById('list-agenda');
+            listAg.innerHTML = agendas.length === 0 ? '<p class="text-xs text-slate-400 text-center py-4">Belum ada agenda tercatat.</p>' : '';
+            
+            agendas.sort((a,b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)).forEach((item, index) => {
+                const hariTanggal = formatDateWithDay(item.date);
+                listAg.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium">${hariTanggal} | ${item.time}</span>
+                            <h4 class="text-sm font-semibold text-slate-700 mt-1">${item.title}</h4>
+                            <div class="flex gap-3 mt-1.5">
+                                <a href="${getWhatsAppUrl(item)}" target="_blank" class="text-[10px] text-emerald-600 hover:underline font-medium"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim WA</a>
+                                <a href="${getGoogleCalendarUrl(item)}" target="_blank" class="text-[10px] text-blue-600 hover:underline font-medium"><i class="fa-solid fa-calendar-plus mr-1"></i> Kalender</a>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="completeAgenda(${index})" title="Tandai Selesai" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white p-2 rounded-lg transition"><i class="fa-solid fa-check text-xs"></i></button>
+                            <button onclick="deleteAgenda(${index})" title="Hapus" class="text-slate-400 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            const listRk = document.getElementById('list-rekap');
+            listRk.innerHTML = rekaps.length === 0 ? '<p class="text-xs text-slate-400 text-center py-4">Belum ada catatan aktivitas.</p>' : '';
+
+            rekaps.sort((a,b) => new Date(b.rawDate + ' ' + b.time) - new Date(a.rawDate + ' ' + a.time)).forEach((item, index) => {
+                const displayDate = item.dateText ? item.dateText : `${item.rawDate} - ${item.time}`;
+                listRk.innerHTML += `
+                    <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-medium">${displayDate}</span>
+                            <p class="text-sm text-slate-700 mt-1">${item.desc}</p>
+                        </div>
+                        <button onclick="deleteRekap(${index})" class="text-slate-400 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                    </div>
+                `;
             });
         }
 
-        function deleteAgenda(key) {
-            if (confirm('Hapus agenda ini?')) {
-                db.ref('agendapribadi/' + currentUserPath + '/items/' + key).remove();
-            }
+        document.getElementById('form-agenda').addEventListener('submit', function(e) {
+            e.preventDefault();
+            agendas.push({
+                title: document.getElementById('ag-title').value,
+                date: document.getElementById('ag-date').value,
+                time: document.getElementById('ag-time').value
+            });
+            localStorage.setItem('my_agendas', JSON.stringify(agendas));
+            this.reset();
+            document.getElementById('ag-date').value = todayStr;
+            document.getElementById('ag-time').value = timeStr;
+            renderAll();
+        });
+
+        document.getElementById('form-rekap').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const dateVal = document.getElementById('rk-date').value;
+            const timeVal = document.getElementById('rk-time').value;
+            rekaps.push({
+                desc: document.getElementById('rk-desc').value,
+                dateText: `${formatDateWithDay(dateVal)} (${timeVal})`,
+                rawDate: dateVal,
+                time: timeVal
+            });
+            localStorage.setItem('my_rekaps', JSON.stringify(rekaps));
+            this.reset();
+            document.getElementById('rk-date').value = todayStr;
+            document.getElementById('rk-time').value = timeStr;
+            renderAll();
+        });
+
+        function deleteAgenda(index) {
+            agendas.splice(index, 1);
+            localStorage.setItem('my_agendas', JSON.stringify(agendas));
+            renderAll();
         }
+
+        function deleteRekap(index) {
+            rekaps.splice(index, 1);
+            localStorage.setItem('my_rekaps', JSON.stringify(rekaps));
+            renderAll();
+        }
+
+        renderAll();
     </script>
 </body>
 </html>
