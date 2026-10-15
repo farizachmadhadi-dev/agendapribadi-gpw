@@ -56,21 +56,21 @@
     </div>
 
     <script>
-        // Konfigurasi Firebase (Ganti dengan kredensial proyek Firebase Anda)
+        // Konfigurasi Firebase
         const firebaseConfig = {
-            apiKey: "MASUKKAN_API_KEY_ANDA",
-            authDomain: "MASUKKAN_AUTH_DOMAIN",
-            databaseURL: "MASUKKAN_DATABASE_URL",
-            projectId: "MASUKKAN_PROJECT_ID",
-            storageBucket: "MASUKKAN_STORAGE_BUCKET",
-            messagingSenderId: "MASUKKAN_SENDER_ID",
-            appId: "MASUKKAN_APP_ID"
+            apiKey: "AIzaSyDQAhMUUqVzAOUAdhHksZ6PgOPaXiJuC7o",
+            authDomain: "agendapribadi.firebaseapp.com",
+            databaseURL: "https://agendapribadi-default-rtdb.firebaseio.com",
+            projectId: "agendapribadi",
+            storageBucket: "agendapribadi.firebasestorage.app",
+            messagingSenderId: "62329882460",
+            appId: "1:62329882460:web:34652e2be70e971710a399"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Daftar PIN dan Nama Pengguna (Bisa diubah atau ditambah sesuai kebutuhan)
+        // Daftar PIN dan Nama Pengguna
         const users = {
             "1111": { name: "Agenda Si A", path: "user_a" },
             "2222": { name: "Agenda Si B", path: "user_b" }
