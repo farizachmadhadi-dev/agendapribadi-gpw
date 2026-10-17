@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda & Rekap Pribadi - Lokasi & Waktu</title>
+    <title>Agenda & Rekap Pribadi - Edit Feature</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome untuk ikon -->
@@ -33,7 +33,7 @@
 
     <!-- Header -->
     <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
-        <div class="max-w-md mx-auto flex justify-between items-center">
+        <div class="max-w-md md:max-w-5xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <h1 class="text-lg font-bold"><i class="fa-solid fa-calendar-days mr-2"></i>Agenda & Rekap</h1>
                 <button onclick="lockApp()" class="text-xs bg-indigo-700 hover:bg-indigo-800 px-2 py-1 rounded text-indigo-200 transition" title="Kunci Aplikasi"><i class="fa-solid fa-lock"></i> Kunci</button>
@@ -43,103 +43,121 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-md mx-auto p-4 space-y-6">
+    <main class="max-w-md md:max-w-5xl mx-auto p-4 space-y-6 md:space-y-0 md:grid md:grid-cols-12 md:gap-6">
 
-        <!-- Navigation Tabs -->
-        <div class="flex rounded-lg bg-slate-200 p-1">
-            <button onclick="switchTab('agenda')" id="tab-agenda" class="flex-1 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 shadow-sm transition">Agenda & Rencana</button>
-            <button onclick="switchTab('rekap')" id="tab-rekap" class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition">Rekap Selesai</button>
-        </div>
-
-        <!-- SECTION: AGENDA -->
-        <section id="section-agenda" class="space-y-4">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-plus-circle text-indigo-600 mr-1"></i> Tambah Agenda Baru</h2>
-                <form id="form-agenda" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Judul Kegiatan</label>
-                        <input type="text" id="ag-title" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Meeting Proyek / Workshop">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Lokasi / Tempat (Opsional)</label>
-                        <input type="text" id="ag-location" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Ruang Rapat UHT / Hotel Mega Lestari">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal</label>
-                        <input type="date" id="ag-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Jam Mulai</label>
-                            <input type="time" id="ag-time-start" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Jam Selesai</label>
-                            <input type="time" id="ag-time-end" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Simpan Agenda</button>
-                </form>
+        <!-- Kolom Kiri: Navigasi & Form Input -->
+        <div class="space-y-6 md:col-span-5">
+            <!-- Navigation Tabs -->
+            <div class="flex rounded-lg bg-slate-200 p-1">
+                <button onclick="switchTab('agenda')" id="tab-agenda" class="flex-1 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 shadow-sm transition">Agenda & Rencana</button>
+                <button onclick="switchTab('rekap')" id="tab-rekap" class="flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition">Rekap Selesai</button>
             </div>
 
-            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
-                <h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Rekap Jadwal ke WA</h3>
-                <div class="grid grid-cols-4 gap-1.5">
-                    <button onclick="sendBatchWA('agenda', 'today')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">Hari Ini</button>
-                    <button onclick="sendBatchWA('agenda', 'week')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Pekan</button>
-                    <button onclick="sendBatchWA('agenda', 'twoweeks')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">2 Pekan</button>
-                    <button onclick="sendBatchWA('agenda', 'month')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Bulan</button>
+            <!-- SECTION: FORM AGENDA -->
+            <div id="form-section-agenda" class="space-y-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <h2 id="form-agenda-title" class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-plus-circle text-indigo-600 mr-1"></i> Tambah Agenda Baru</h2>
+                    <form id="form-agenda" class="space-y-3">
+                        <input type="hidden" id="ag-edit-id">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Judul Kegiatan</label>
+                            <input type="text" id="ag-title" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Meeting Proyek / Workshop">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Lokasi / Tempat (Opsional)</label>
+                            <input type="text" id="ag-location" class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Contoh: Ruang Rapat UHT / Hotel Mega Lestari">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal</label>
+                            <input type="date" id="ag-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Jam Mulai</label>
+                                <input type="time" id="ag-time-start" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Jam Selesai</label>
+                                <input type="time" id="ag-time-end" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" id="btn-submit-agenda" class="flex-1 bg-indigo-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">Simpan Agenda</button>
+                            <button type="button" id="btn-cancel-agenda" onclick="cancelEditAgenda()" class="hidden bg-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-semibold hover:bg-slate-400 transition">Batal</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Panel Kirim Agenda ke WA -->
+                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl shadow-sm space-y-3">
+                    <h3 class="text-xs font-bold text-emerald-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Rekap Jadwal ke WA</h3>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button onclick="sendBatchWA('agenda', 'today')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">Hari Ini</button>
+                        <button onclick="sendBatchWA('agenda', 'week')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Pekan</button>
+                        <button onclick="sendBatchWA('agenda', 'twoweeks')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">2 Pekan</button>
+                        <button onclick="sendBatchWA('agenda', 'month')" class="bg-emerald-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-emerald-700 transition">1 Bulan</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="space-y-2">
+            <!-- SECTION: FORM REKAP -->
+            <div id="form-section-rekap" class="space-y-4 hidden">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                    <h2 id="form-rekap-title" class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-clipboard-check text-emerald-600 mr-1"></i> Catat Hasil Kerja (Log)</h2>
+                    <form id="form-rekap" class="space-y-3">
+                        <input type="hidden" id="rk-edit-id">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">Aktivitas yang Dilakukan</label>
+                            <input type="text" id="rk-desc" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Selesai meeting dengan klien">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Selesai</label>
+                                <input type="date" id="rk-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">Jam Selesai</label>
+                                <input type="time" id="rk-time" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" id="btn-submit-rekap" class="flex-1 bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">Catat ke Rekap Harian</button>
+                            <button type="button" id="btn-cancel-rekap" onclick="cancelEditRekap()" class="hidden bg-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-semibold hover:bg-slate-400 transition">Batal</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Panel Kirim Rekap ke WA -->
+                <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm space-y-3">
+                    <h3 class="text-xs font-bold text-indigo-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Laporan Hasil Kerja ke WA</h3>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button onclick="sendBatchWA('rekap', 'today')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">Hari Ini</button>
+                        <button onclick="sendBatchWA('rekap', 'week')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Pekan</button>
+                        <button onclick="sendBatchWA('rekap', 'twoweeks')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">2 Pekan</button>
+                        <button onclick="sendBatchWA('rekap', 'month')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Bulan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Daftar List Agenda & Rekap -->
+        <div class="space-y-6 md:col-span-7 mt-6 md:mt-0">
+            <!-- SECTION: LIST AGENDA -->
+            <section id="section-agenda" class="space-y-2">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Daftar Agenda Tersimpan</h3>
                 <div id="list-agenda" class="space-y-2">
                     <p class="text-xs text-slate-400 text-center py-4">Memuat data...</p>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- SECTION: REKAP AKTIVITAS -->
-        <section id="section-rekap" class="space-y-4 hidden">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                <h2 class="text-sm font-bold text-slate-700 mb-3"><i class="fa-solid fa-clipboard-check text-emerald-600 mr-1"></i> Catat Hasil Kerja (Log)</h2>
-                <form id="form-rekap" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Aktivitas yang Dilakukan</label>
-                        <input type="text" id="rk-desc" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Contoh: Selesai meeting dengan klien">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Tanggal Selesai</label>
-                            <input type="date" id="rk-date" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">Jam Selesai</label>
-                            <input type="time" id="rk-time" required class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-emerald-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">Catat ke Rekap Harian</button>
-                </form>
-            </div>
-
-            <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-xl shadow-sm space-y-3">
-                <h3 class="text-xs font-bold text-indigo-800 uppercase tracking-wider"><i class="fa-brands fa-whatsapp mr-1"></i> Kirim Laporan Hasil Kerja ke WA</h3>
-                <div class="grid grid-cols-4 gap-1.5">
-                    <button onclick="sendBatchWA('rekap', 'today')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">Hari Ini</button>
-                    <button onclick="sendBatchWA('rekap', 'week')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Pekan</button>
-                    <button onclick="sendBatchWA('rekap', 'twoweeks')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">2 Pekan</button>
-                    <button onclick="sendBatchWA('rekap', 'month')" class="bg-indigo-600 text-white py-1 px-1 rounded text-[11px] font-medium hover:bg-indigo-700 transition">1 Bulan</button>
-                </div>
-            </div>
-
-            <div class="space-y-2">
+            <!-- SECTION: LIST REKAP -->
+            <section id="section-rekap" class="space-y-2 hidden">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Riwayat Aktivitas</h3>
                 <div id="list-rekap" class="space-y-2">
                     <p class="text-xs text-slate-400 text-center py-4">Memuat data...</p>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
 
     </main>
 
@@ -212,19 +230,25 @@
         document.getElementById('rk-time').value = timeStr;
 
         function switchTab(tab) {
-            const secAgenda = document.getElementById('section-agenda');
-            const secRekap = document.getElementById('section-rekap');
+            const secAgendaList = document.getElementById('section-agenda');
+            const secRekapList = document.getElementById('section-rekap');
+            const formAgenda = document.getElementById('form-section-agenda');
+            const formRekap = document.getElementById('form-section-rekap');
             const tabAgenda = document.getElementById('tab-agenda');
             const tabRekap = document.getElementById('tab-rekap');
 
             if(tab === 'agenda') {
-                secAgenda.classList.remove('hidden');
-                secRekap.classList.add('hidden');
+                secAgendaList.classList.remove('hidden');
+                secRekapList.classList.add('hidden');
+                formAgenda.classList.remove('hidden');
+                formRekap.classList.add('hidden');
                 tabAgenda.className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white text-indigo-600 shadow-sm transition";
                 tabRekap.className = "flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition";
             } else {
-                secAgenda.classList.add('hidden');
-                secRekap.classList.remove('hidden');
+                secAgendaList.classList.add('hidden');
+                secRekapList.classList.remove('hidden');
+                formAgenda.classList.add('hidden');
+                formRekap.classList.remove('hidden');
                 tabRekap.className = "flex-1 py-2 text-sm font-semibold rounded-md bg-white text-emerald-600 shadow-sm transition";
                 tabAgenda.className = "flex-1 py-2 text-sm font-semibold rounded-md text-slate-600 transition";
             }
@@ -364,6 +388,63 @@
             alert('Agenda berhasil diselesaikan dan dicatat ke riwayat rekap!');
         }
 
+        // --- FITUR EDIT AGENDA ---
+        function editAgenda(id) {
+            const item = agendas.find(ag => ag.id === id);
+            if (!item) return;
+
+            document.getElementById('ag-edit-id').value = item.id;
+            document.getElementById('ag-title').value = item.title;
+            document.getElementById('ag-location').value = item.location || '';
+            document.getElementById('ag-date').value = item.date;
+            document.getElementById('ag-time-start').value = item.timeStart || '';
+            document.getElementById('ag-time-end').value = item.timeEnd || '';
+
+            document.getElementById('form-agenda-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-indigo-600 mr-1"></i> Edit Agenda`;
+            document.getElementById('btn-submit-agenda').innerText = "Perbarui Agenda";
+            document.getElementById('btn-cancel-agenda').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditAgenda() {
+            document.getElementById('form-agenda').reset();
+            document.getElementById('ag-edit-id').value = '';
+            document.getElementById('ag-date').value = todayStr;
+            document.getElementById('ag-time-start').value = timeStr;
+            document.getElementById('ag-time-end').value = timeStr;
+
+            document.getElementById('form-agenda-title').innerHTML = `<i class="fa-solid fa-plus-circle text-indigo-600 mr-1"></i> Tambah Agenda Baru`;
+            document.getElementById('btn-submit-agenda').innerText = "Simpan Agenda";
+            document.getElementById('btn-cancel-agenda').classList.add('hidden');
+        }
+
+        // --- FITUR EDIT REKAP ---
+        function editRekap(id) {
+            const item = rekaps.find(rk => rk.id === id);
+            if (!item) return;
+
+            document.getElementById('rk-edit-id').value = item.id;
+            document.getElementById('rk-desc').value = item.desc;
+            document.getElementById('rk-date').value = item.rawDate || todayStr;
+            document.getElementById('rk-time').value = item.time || timeStr;
+
+            document.getElementById('form-rekap-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-emerald-600 mr-1"></i> Edit Rekap`;
+            document.getElementById('btn-submit-rekap').innerText = "Perbarui Rekap";
+            document.getElementById('btn-cancel-rekap').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditRekap() {
+            document.getElementById('form-rekap').reset();
+            document.getElementById('rk-edit-id').value = '';
+            document.getElementById('rk-date').value = todayStr;
+            document.getElementById('rk-time').value = timeStr;
+
+            document.getElementById('form-rekap-title').innerHTML = `<i class="fa-solid fa-clipboard-check text-emerald-600 mr-1"></i> Catat Hasil Kerja (Log)`;
+            document.getElementById('btn-submit-rekap').innerText = "Catat ke Rekap Harian";
+            document.getElementById('btn-cancel-rekap').classList.add('hidden');
+        }
+
         function renderAgendas() {
             const listAg = document.getElementById('list-agenda');
             listAg.innerHTML = agendas.length === 0 ? '<p class="text-xs text-slate-400 text-center py-4">Belum ada agenda tercatat.</p>' : '';
@@ -389,8 +470,9 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-1">
+                            <button onclick="editAgenda('${item.id}')" title="Edit" class="text-slate-400 hover:text-indigo-600 p-1.5"><i class="fa-solid fa-pen text-xs"></i></button>
                             <button onclick="completeAgenda('${item.id}')" title="Tandai Selesai" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white p-2 rounded-lg transition"><i class="fa-solid fa-check text-xs"></i></button>
-                            <button onclick="deleteAgenda('${item.id}')" title="Hapus" class="text-slate-400 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            <button onclick="deleteAgenda('${item.id}')" title="Hapus" class="text-slate-400 hover:text-red-500 p-1.5"><i class="fa-solid fa-trash-can text-xs"></i></button>
                         </div>
                     </div>
                 `;
@@ -409,7 +491,10 @@
                             <span class="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded font-medium">${displayDate}</span>
                             <p class="text-sm text-slate-700 mt-1">${item.desc}</p>
                         </div>
-                        <button onclick="deleteRekap('${item.id}')" class="text-slate-400 hover:text-red-500 p-2"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <div class="flex items-center gap-1">
+                            <button onclick="editRekap('${item.id}')" title="Edit" class="text-slate-400 hover:text-indigo-600 p-1.5"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="deleteRekap('${item.id}')" title="Hapus" class="text-slate-400 hover:text-red-500 p-1.5"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
                     </div>
                 `;
             });
@@ -417,36 +502,68 @@
 
         document.getElementById('form-agenda').addEventListener('submit', function(e) {
             e.preventDefault();
-            const newAgenda = {
+            const editId = document.getElementById('ag-edit-id').value;
+            const userPath = 'users_pin_' + currentPin;
+
+            const agendaData = {
                 title: document.getElementById('ag-title').value,
                 location: document.getElementById('ag-location').value.trim(),
                 date: document.getElementById('ag-date').value,
                 timeStart: document.getElementById('ag-time-start').value,
                 timeEnd: document.getElementById('ag-time-end').value
             };
-            const userPath = 'users_pin_' + currentPin;
-            db.ref('agendapribadi/' + userPath + '/agendas').push(newAgenda);
-            this.reset();
-            document.getElementById('ag-date').value = todayStr;
-            document.getElementById('ag-time-start').value = timeStr;
-            document.getElementById('ag-time-end').value = timeStr;
+
+            if (editId) {
+                // Update data lama di Firebase
+                db.ref('agendapribadi/' + userPath + '/agendas/' + editId).update(agendaData, (error) => {
+                    if (!error) {
+                        cancelEditAgenda();
+                        alert('Agenda berhasil diperbarui!');
+                    }
+                });
+            } else {
+                // Tambah data baru
+                db.ref('agendapribadi/' + userPath + '/agendas').push(agendaData, (error) => {
+                    if (!error) {
+                        this.reset();
+                        document.getElementById('ag-date').value = todayStr;
+                        document.getElementById('ag-time-start').value = timeStr;
+                        document.getElementById('ag-time-end').value = timeStr;
+                    }
+                });
+            }
         });
 
         document.getElementById('form-rekap').addEventListener('submit', function(e) {
             e.preventDefault();
+            const editId = document.getElementById('rk-edit-id').value;
+            const userPath = 'users_pin_' + currentPin;
             const dateVal = document.getElementById('rk-date').value;
             const timeVal = document.getElementById('rk-time').value;
-            const newRekap = {
+
+            const rekapData = {
                 desc: document.getElementById('rk-desc').value,
                 dateText: `${formatDateWithDay(dateVal)} (${timeVal})`,
                 rawDate: dateVal,
                 time: timeVal
             };
-            const userPath = 'users_pin_' + currentPin;
-            db.ref('agendapribadi/' + userPath + '/rekaps').push(newRekap);
-            this.reset();
-            document.getElementById('rk-date').value = todayStr;
-            document.getElementById('rk-time').value = timeStr;
+
+            if (editId) {
+                db.ref('agendapribadi/' + userPath + '/rekaps/' + editId).update(rekapData, (error) => {
+                    if (!error) {
+                        cancelEditRekap();
+                        alert('Rekap berhasil diperbarui!');
+                    }
+                });
+            } else {
+                db.ref('agendapribadi/' + userPath + '/rekaps').push(rekapData, (error) => {
+                    if (!error) {
+                        this.reset();
+                        document.getElementById('rk-date').value = todayStr;
+                        document.getElementById('rk-time').value = timeStr;
+                    }
+                });
+            }
         });
 
         function deleteAgenda(id) {
